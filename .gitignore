@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+*.bak
+
+# Environment
+.env
+.env.*
+
+# Runtime data (created at runtime, not source)
+wangchuan_data/
+*.sqlite
+*.jsonl
+
+# IDE
+.vscode/
+.idea/
