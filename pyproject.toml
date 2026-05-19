@@ -44,9 +44,9 @@ full = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-org/wangchuan-memory"
-Repository = "https://github.com/your-org/wangchuan-memory"
-Documentation = "https://github.com/your-org/wangchuan-memory#readme"
+Homepage = "https://github.com/ahbms/wangchuan-memory"
+Repository = "https://github.com/ahbms/wangchuan-memory"
+Documentation = "https://github.com/ahbms/wangchuan-memory#readme"
 
 [project.scripts]
 wangchuan = "wangchuan.__main__:main"
@@ -55,7 +55,7 @@ wangchuan = "wangchuan.__main__:main"
 include-package-data = true
 
 [tool.setuptools.package-data]
-wangchuan = ["*.md", "v3/*.sql", "v3/*.example", "v3/*.md"]
+wangchuan = ["*.md", "v3/*.sql", "v3/.env.example", "v3/*.example", "v3/*.md"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
