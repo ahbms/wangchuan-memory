@@ -1,6 +1,8 @@
 # 忘川 (WangChuan)
 
-![WangChuan Logo](./docs/assets/logo.png)
+<p align="center">
+  <img src="./docs/assets/logo.png" alt="WangChuan Logo" width="160">
+</p>
 
 <h1 align="center">忘川 · WangChuan</h1>
 
