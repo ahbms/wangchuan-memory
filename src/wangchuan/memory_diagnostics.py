@@ -14,6 +14,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
+from wangchuan.migrations import MigrationManager
+
 try:
     from wangchuan._adapters.runtime_adapter import get_energy_state as get_runtime_energy_state
 except ImportError:
@@ -364,6 +366,7 @@ def user_healthcheck(memory_obj: Any) -> Dict[str, Any]:
     write_gate_events = memory_obj._read_recent_write_gate_events(limit=160)
     write_gate_probe_payload = write_gate_probe(memory_obj)
     schema_index = memory_obj.memory_schema_index_status()
+    migration_status = MigrationManager(memory_obj.db_path).status()
     structured_overview = memory_obj.structured_memory_overview()
     canonical_profile = memory_obj.user_canonical_profile()
     history_search = history_search_healthcheck(memory_obj)
@@ -415,6 +418,20 @@ def user_healthcheck(memory_obj: Any) -> Dict[str, Any]:
             "detail": (
                 f"sidecar_backed={schema_index.get('sidecar_backed', 0)} "
                 f"derived_backfill={schema_index.get('derived_backfill', 0)}"
+            ),
+        },
+        "schema_version_is_visible": {
+            "ok": bool(migration_status.get("current_version")),
+            "detail": (
+                f"current={migration_status.get('current_version') or 'missing'} "
+                f"meta={migration_status.get('meta_schema_version') or 'missing'}"
+            ),
+        },
+        "schema_version_matches_meta": {
+            "ok": migration_status.get("version_matches_meta") is True,
+            "detail": (
+                f"current={migration_status.get('current_version') or 'missing'} "
+                f"meta={migration_status.get('meta_schema_version') or 'missing'}"
             ),
         },
         "hot_memory_signal_present": {
@@ -550,6 +567,7 @@ def user_healthcheck(memory_obj: Any) -> Dict[str, Any]:
             "noise_blocked": len(recent_noise_blocks),
             "probe": write_gate_probe_payload,
         },
+        "migration_status": migration_status,
         "memory_schema_index": schema_index,
         "structured_memory": structured_overview,
         "user_canonical_profile": canonical_profile,
@@ -584,6 +602,7 @@ def status(memory_obj: Any) -> Dict[str, Any]:
     health = user_healthcheck(memory_obj)
     task_resume_payload = task_resume(memory_obj)
     schema_index = memory_obj.memory_schema_index_status()
+    migration_status = health.get("migration_status") or MigrationManager(memory_obj.db_path).status()
     structured_overview = memory_obj.structured_memory_overview()
     canonical_profile = memory_obj.user_canonical_profile()
     resonance_runtime = resonance_runtime_healthcheck(memory_obj)
@@ -593,6 +612,10 @@ def status(memory_obj: Any) -> Dict[str, Any]:
         "passed": health.get("passed", 0),
         "total": health.get("total", 0),
         "db_path": str(getattr(memory_obj, "db_path", "") or ""),
+        "schema_version": migration_status.get("current_version") or "unknown",
+        "schema_meta_version": migration_status.get("meta_schema_version") or "unknown",
+        "schema_pending": migration_status.get("pending_count", 0),
+        "schema_version_matches_meta": migration_status.get("version_matches_meta") is True,
         "schema_total": schema_index.get("total", 0),
         "structured_reader": structured_overview.get("reader", "?"),
         "high_quality": structured_overview.get("high_quality", 0),
@@ -604,6 +627,8 @@ def status(memory_obj: Any) -> Dict[str, Any]:
         "summary": (
             f"foundation={health.get('status', 'unknown')} "
             f"{health.get('passed', 0)}/{health.get('total', 0)} | "
+            f"schema_version={migration_status.get('current_version') or 'unknown'} "
+            f"pending={migration_status.get('pending_count', 0)} | "
             f"schema={schema_index.get('total', 0)} | "
             f"structured={structured_overview.get('reader', '?')} "
             f"hq={structured_overview.get('high_quality', 0)} hot={structured_overview.get('hot_candidates', 0)} | "
@@ -640,6 +665,7 @@ def status(memory_obj: Any) -> Dict[str, Any]:
         f"🧠 {total} 条记忆 | "
         f"📐 本地向量 {vector_stats.get('indexed_memories', 0)} | "
         f"🧱 {foundation['status']} {foundation['passed']}/{foundation['total']} | "
+        f"🧬 schema={foundation['schema_version']} pending={foundation['schema_pending']} | "
         f"🎛️ {resonance['status']} role={resonance['primary_role']} | "
         f"🔎 recall={foundation['recall_status']} via={foundation['recall_reader']} | "
         f"🗂️ schema={schema_index.get('total', 0)} | "
@@ -656,6 +682,7 @@ def status(memory_obj: Any) -> Dict[str, Any]:
         "vector_index": vector_stats,
         "healthcheck": health,
         "task_resume": task_resume_payload,
+        "migration_status": migration_status,
         "memory_schema_index": schema_index,
         "structured_memory": structured_overview,
         "user_canonical_profile": canonical_profile,

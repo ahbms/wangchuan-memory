@@ -1,0 +1,55 @@
+---
+name: Alpha trial feedback
+description: Share feedback from trying WangChuan alpha
+title: "[Alpha feedback]: "
+labels: [feedback]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying WangChuan. You can also use `docs/FEEDBACK_TEMPLATE.md` for offline notes.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      value: |
+        OS:
+        Python:
+        Install method:
+        WangChuan version:
+        Extras:
+    validations:
+      required: true
+  - type: textarea
+    id: memory
+    attributes:
+      label: Input memory
+      description: What did you write?
+    validations:
+      required: true
+  - type: textarea
+    id: query
+    attributes:
+      label: Query
+      description: What did you search/recall?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output or error
+      render: text
+    validations:
+      required: false

@@ -23,3 +23,53 @@ jobs:
         run: python scripts/release_check.py
       - name: Tests
         run: pytest -q
+      - name: Examples smoke
+        run: pytest -q tests/test_examples_smoke.py
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip setuptools wheel build
+      - name: Build sdist and wheel
+        run: python -m build
+      - name: Verify build artifacts include runtime assets
+        run: |
+          python -m pip install pytest
+          pytest -q tests/test_build_artifacts.py
+      - name: Install wheel and run smoke
+        run: |
+          python -m venv .venv-wheel
+          . .venv-wheel/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install dist/*.whl
+          export WANGCHUAN_HOME="$RUNNER_TEMP/wangchuan-wheel-home"
+          python - <<'PY'
+          from wangchuan import remember, recall, status
+          assert remember('ci wheel smoke', importance=0.8, tags=['ci'])['success'] is True
+          rows = recall('ci wheel smoke', limit=3)
+          assert rows and any('ci wheel smoke' in item['content'] for item in rows)
+          payload = status()
+          assert isinstance(payload, dict) and 'message' in payload
+          print(payload['message'])
+          PY
+          python -m wangchuan status --json
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pip-audit
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pip-audit
+      - name: Dependency audit
+        run: pip-audit

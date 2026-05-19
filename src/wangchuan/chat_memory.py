@@ -3,8 +3,9 @@
 存储和管理 legacy 对话历史
 
 ⚠️ 说明：
-- 本模块默认落库到 wangchuan/.wangchuan/memory.db
-- 它主要承担 legacy 对话历史存档，不是当前主 recall 主链
+- 仅当直接实例化本 legacy 类且未传 `db_path` 时，才会落库到 wangchuan/.wangchuan/memory.db
+- 该路径是历史兼容存档库，不是当前默认主库；当前默认主库见 paths.default_db_path() / .index/index.sqlite
+- 本模块主要承担 legacy 对话历史存档，不是当前主 recall 主链
 - 不属于当前主回答前 recall 主链，也不是新的功能扩展入口
 - 当前主回答回忆链优先使用 wangchuan/recall_service.py
 - recall_service.py 当前内部再承载到 wangchuan/v3/pipeline_v3.py
@@ -44,8 +45,8 @@ class ChatMemory:
         初始化对话记忆
         
         Args:
-            db_path: 数据库路径；默认落到 legacy .wangchuan/memory.db，
-                不作为当前图谱增强 recall 主链默认库
+            db_path: 数据库路径；不传时仅作为 legacy 存档 fallback
+                落到 .wangchuan/memory.db，不作为当前图谱增强 recall 主链默认库
         """
         if db_path is None:
             # legacy 对话历史库（非当前 recall 主链）

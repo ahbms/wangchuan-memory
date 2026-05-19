@@ -1,0 +1,56 @@
+---
+name: Bug report
+description: Report an install, runtime, recall, CLI, packaging, or docs bug
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Scenario
+      description: What were you trying to do?
+    validations:
+      required: true
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands or code
+      description: Paste the exact command or minimal Python snippet.
+      render: bash
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, install method, WangChuan version, optional extras.
+      value: |
+        OS:
+        Python:
+        Install method:
+        WangChuan version:
+        Extras:
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - P0 install / first-run / data safety blocker
+        - P1 wrong recall / CLI / docs / packaging bug
+        - P2 enhancement / nice to have
+    validations:
+      required: true

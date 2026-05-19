@@ -26,13 +26,13 @@ def test_first_run_remember_recall(tmp_path, monkeypatch):
 
 def test_public_imports():
     import wangchuan
-    from wangchuan import Memory, WangchuanPipeline
+    from wangchuan import Memory, healthcheck
     from wangchuan.facade import version
 
     assert wangchuan.__version__
     assert version() == "3.0.0"
     assert Memory.__name__ == "Memory"
-    assert WangchuanPipeline.__name__ == "WangchuanPipeline"
+    assert callable(healthcheck)
 
 
 def test_cli_status_json(tmp_path):

@@ -5,8 +5,7 @@ Use `wangchuan` as the stable external import path, and
 
 Stable public facade exposed from this root package:
 - Functional memory API: remember / recall / recall_raw / recall_scars / status / healthcheck / task_resume
-- Python object API: Memory / WangchuanPipeline
-- Utility helper: paths
+- Python object API: Memory
 
 Layering:
 1. Stable public facade: this package root and `python3 -m wangchuan`
@@ -41,21 +40,11 @@ _STABLE_FUNCTION_EXPORTS = [
 
 _STABLE_OBJECT_EXPORTS = [
     "Memory",
-    "WangchuanPipeline",
-]
-
-_STABLE_UTILITY_EXPORTS = [
-    "paths",
-    "facade_invoke",
-    "facade_health",
-    "facade_capabilities",
-    "facade_version",
 ]
 
 _STABLE_PUBLIC_EXPORTS = [
     *_STABLE_OBJECT_EXPORTS,
     *_STABLE_FUNCTION_EXPORTS,
-    *_STABLE_UTILITY_EXPORTS,
 ]
 
 _STABLE_MEMORY_API_EXPORT_NAMES = {
@@ -162,19 +151,19 @@ def __dir__():
 
 
 def recent(limit: int = 10):
-    return __getattr__("get_memory")().recent(limit)
+    return _memory_api_exports()["get_memory"]().recent(limit)
 
 
 def healthcheck():
-    return __getattr__("get_memory")().user_healthcheck()
+    return _memory_api_exports()["get_memory"]().user_healthcheck()
 
 
 def cleanup(dry_run: bool = True):
-    return __getattr__("get_memory")().cleanup_historical_noise(dry_run=dry_run)
+    return _memory_api_exports()["get_memory"]().cleanup_historical_noise(dry_run=dry_run)
 
 
 def task_resume(board_path: str | None = None):
-    return __getattr__("get_memory")().task_resume(board_path)
+    return _memory_api_exports()["get_memory"]().task_resume(board_path)
 
 
 def paths():

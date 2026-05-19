@@ -12,7 +12,14 @@ __pycache__/
 
 # Runtime data (created at runtime, not source)
 wangchuan_data/
+.index/
+.wangchuan/
+state/
+dist/
+build/
+*.egg-info/
 *.sqlite
+*.db
 *.jsonl
 
 # IDE

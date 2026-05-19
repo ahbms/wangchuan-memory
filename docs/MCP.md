@@ -1,6 +1,6 @@
-# WangChuan MCP Server 指南
+# MCP
 
-MCP 支持是 optional，基础包默认不安装 MCP 依赖。
+忘川 MCP 支持是 optional，不随基础包默认安装。
 
 ## 安装
 
@@ -25,4 +25,8 @@ python3 -m wangchuan.mcp_server
 - `memory_recent`
 - `memory_search_by_tag`
 
-高级 tools 可以通过明确 profile 启用；上面的 stable profile 是公开 alpha 使用面。
+## 说明
+
+- 基础包不依赖 MCP
+- MCP 支持通过 optional install profile 启用
+- 稳定 tool 兼容范围遵循 [`API_CONTRACT.md`](./API_CONTRACT.md)

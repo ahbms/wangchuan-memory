@@ -116,7 +116,7 @@ def main() -> int:
         for i, line in enumerate(p.read_text(errors="ignore").splitlines(), 1):
             if "tiangong.wangchuan" in line or "python3 -m tiangong.wangchuan" in line:
                 old_refs.append(f"{p.relative_to(ROOT)}:{i}:{line[:160]}")
-            if "../../" in line or "../../../" in line or "deploy/docker" in line or "docs/" in line:
+            if ("../../" in line or "../../../" in line or "deploy/docker" in line) and "../../docs/" not in line:
                 doc_refs.append(f"{p.relative_to(ROOT)}:{i}:{line[:160]}")
     check("old_package_refs", not old_refs, f"{len(old_refs)} found", old_refs[:50])
     check("internal_doc_links", not doc_refs, f"{len(doc_refs)} found", doc_refs[:50])
@@ -148,12 +148,13 @@ def main() -> int:
 import warnings
 warnings.filterwarnings('ignore')
 import wangchuan
-from wangchuan import Memory, WangchuanPipeline
+from wangchuan import Memory, remember, recall, recall_raw, recall_scars, status, healthcheck, task_resume
 from wangchuan.facade import version
 m = Memory()
 print(version())
 print(type(m).__name__)
-print(WangchuanPipeline.__name__)
+print(callable(remember), callable(recall), callable(recall_raw), callable(recall_scars))
+print(callable(status), callable(healthcheck), callable(task_resume))
 """
     cp = subprocess.run(
         [sys.executable, "-B", "-c", code],

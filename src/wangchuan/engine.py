@@ -9,8 +9,8 @@
 - 通过 `wangchuan.legacy_types` 转发 legacy 数据类型，避免本文件继续承担类型仓职责
 
 ⚠️ 说明：
-- 本文件属于 v2/legacy 对话历史链，默认依赖 ChatMemory(.wangchuan/memory.db)
-- 它不应再被视为当前图谱增强 recall 主链
+- 本文件属于 v2/legacy 对话历史链；仅在兼容路径直接使用 ChatMemory 且未传 db_path 时，才会落到 .wangchuan/memory.db
+- `.wangchuan/memory.db` 是历史兼容存档库，不是当前默认主库；当前默认主库见 paths.default_db_path() / .index/index.sqlite
 - 不应作为新的生产扩展入口；当前主入口优先看 wangchuan.recall_service
 - recall_service 当前内部再承载到 wangchuan.v3.pipeline_v3.WangchuanPipeline
 - 若只是想理解当前生产记忆主链，请不要先读本文件

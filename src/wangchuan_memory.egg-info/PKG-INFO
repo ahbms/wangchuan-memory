@@ -3,34 +3,12 @@ Name: wangchuan-memory
 Version: 3.0.0a0
 Summary: WangChuan - Evidence-aware Agent Memory Engine
 Author: Agent Teams
-License: MIT License
-        
-        Copyright (c) 2026 Agent Teams
-        
-        Permission is hereby granted, free of charge, to any person obtaining a copy
-        of this software and associated documentation files (the "Software"), to deal
-        in the Software without restriction, including without limitation the rights
-        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-        copies of the Software, and to permit persons to whom the Software is
-        furnished to do so, subject to the following conditions:
-        
-        The above copyright notice and this permission notice shall be included in all
-        copies or substantial portions of the Software.
-        
-        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-        SOFTWARE.
-        
+License-Expression: MIT
 Project-URL: Homepage, https://github.com/your-org/wangchuan-memory
 Project-URL: Repository, https://github.com/your-org/wangchuan-memory
 Project-URL: Documentation, https://github.com/your-org/wangchuan-memory#readme
 Keywords: agent,memory,ai,knowledge-graph,llm
 Classifier: Development Status :: 3 - Alpha
-Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
@@ -54,114 +32,148 @@ Requires-Dist: wangchuan-memory[crypto]; extra == "full"
 Requires-Dist: wangchuan-memory[dev]; extra == "full"
 Dynamic: license-file
 
-# WangChuan
+# 忘川（WangChuan）
 
-[中文说明](./README.zh-CN.md) | English
+[English](./README_EN.md) | 中文
 
-**Evidence-aware memory engine for AI agents.**
+**面向 AI Agent 的证据感知记忆引擎。**
 
-WangChuan helps agents remember the right things, recall them with evidence boundaries, and explain why a memory was surfaced.
-It is designed for teams building agent systems that need more than a flat vector store or a raw conversation log.
+忘川帮助 Agent 记住真正重要的内容，在召回时保留证据边界，并尽量解释"为什么这条记忆会被命中"。
+它适合那些不满足于"纯向量库 + 原始对话堆积"的 Agent 系统。
 
-> **Status:** `3.0.0 alpha`
+> **当前状态：** `3.0.0 alpha`
 >
-> WangChuan is ready for public alpha use.
-> It is not yet "fully polished, zero-guidance production software", but the core remember → recall → inspect loop works.
+> 忘川已经达到**可公开试用**的阶段。核心 remember → recall → inspect 闭环可以跑通。
+> 但还不是"零引导即可生产落地"的成熟产品。
 
 ---
 
-## Why WangChuan
+## 为什么是忘川
 
-Most agent memory systems give you one of these:
+很多 Agent 记忆系统最后会落到下面几种形态：
 
-- a raw transcript log
-- a semantic search wrapper
-- a graph store with weak external boundaries
-- a memory abstraction that is hard to inspect when retrieval goes wrong
+- 原始 transcript 日志
+- 语义搜索外壳
+- 图存储，但边界不够清晰
+- "能记忆"，但召回错了很难解释为什么
 
-WangChuan focuses on a different tradeoff:
+忘川想做的是另一种取舍：
 
-- **Evidence-aware recall** — keep raw evidence, structured memory, and rule-like memory distinct
-- **Inspectable behavior** — explain why a memory ranked high or got penalized
-- **Operational boundaries** — healthcheck, restore drill, clean gate, deployment templates
-- **Conservative public surface** — small stable entry points first, internals second
+- **证据感知召回** — 原始证据、结构化记忆、规则/伤疤类记忆分开处理
+- **可检查行为** — 召回排序、惩罚、解释字段都可以查看
+- **运维边界明确** — healthcheck、恢复、数据库单文件备份
+- **公开面保守** — 先给稳定入口，不承诺零散内部接口
 
 ---
 
-## Quick start
+## 快速开始
 
-### Install
+另见：
+- [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) —— 5 分钟上手
+- [`docs/CLI.md`](./docs/CLI.md) —— 命令参考
+- [`docs/STORAGE.md`](./docs/STORAGE.md) —— 数据路径、备份、恢复
+- [`docs/FAQ.md`](./docs/FAQ.md) —— 常见问题
+- [`docs/API_CONTRACT.md`](./docs/API_CONTRACT.md) —— 稳定公开 API 边界
+- [`docs/DEPRECATION_POLICY.md`](./docs/DEPRECATION_POLICY.md) —— 兼容性与弃用规则
+- [`docs/TROUBLESHOOTING.md`](./docs/TROUBLESHOOTING.md) —— 常见错误与处理
+- [`docs/ALPHA_TRIAL_GUIDE.md`](./docs/ALPHA_TRIAL_GUIDE.md) —— alpha 试用流程
+- [`docs/FEEDBACK_TEMPLATE.md`](./docs/FEEDBACK_TEMPLATE.md) —— 反馈模板
+
+### 安装
 
 ```bash
 pip install wangchuan-memory
 ```
 
-Or from source:
+或从源码安装：
 
 ```bash
-git clone <repo-url>
+git clone <仓库地址>
 cd wangchuan-memory
 pip install -e .
 ```
 
-### Try the Python API
+### 试 Python API
 
 ```python
 from wangchuan import remember, recall, status
 
-remember("User prefers concise, segmented replies.", importance=0.9, tags=["preference"])
-print(recall("How should I respond?", limit=3))
+remember("用户偏好简洁的回复", importance=0.9, tags=["preference"])
+print(recall("应该怎么回复？", limit=3))
 print(status())
 ```
 
-### Try the CLI
+也可以直接跑完整 demo：
+
+```bash
+python3 examples/basic_memory.py
+```
+
+### 试 CLI
 
 ```bash
 python3 -m wangchuan status --json
-python3 -m wangchuan recall "user preferences" --limit 3 --json
+python3 -m wangchuan recall "用户偏好" --limit 3 --json
+```
+
+也可以直接跑完整 CLI demo：
+
+```bash
+bash examples/cli_demo.sh
 ```
 
 ---
 
-## Core API
+## 核心 API
+
+稳定契约参考：[`docs/API_CONTRACT.md`](./docs/API_CONTRACT.md)
 
 ```python
 from wangchuan import (
-    Memory,            # class-based API
-    remember,          # functional: write a memory
-    recall,            # functional: mixed structured recall
-    recall_raw,        # functional: raw evidence recall
-    recall_scars,      # functional: rules/lessons recall
-    status,            # functional: system status
-    healthcheck,       # functional: health check
+    Memory,            # 基于类的 API
+    remember,          # 函数式：写入记忆
+    recall,            # 函数式：混合结构化召回
+    recall_raw,        # 函数式：原始证据召回
+    recall_scars,      # 函数式：规则/教训类召回
+    status,            # 函数式：系统状态
+    healthcheck,       # 函数式：健康检查
 )
 ```
 
-### Class API
+为兼容历史调用，当前仍可能存在额外可导入名称；但对新的外部集成，只以上面这组契约作为稳定承诺。
+
+### 类 API
 
 ```python
 from wangchuan import Memory
 
 m = Memory()
-m.remember("User lives in Shijiazhuang", importance=0.6)
-results = m.recall("user location", limit=5)
+m.remember("用户住在石家庄", importance=0.6)
+results = m.recall("用户位置", limit=5)
 ```
 
-Each result is a dict with:
+每条结果包含：
 
-| Field | Description |
-|-------|-------------|
-| `content` | Memory content text |
-| `score` | Rank score |
-| `memory_type` | `preference` / `rule` / `fact` / etc. |
-| `recall_explain` | Why this memory was retrieved |
-| `created_at` | Timestamp |
+| 字段 | 说明 |
+|------|------|
+| `content` | 记忆内容 |
+| `score` | 排序分数 |
+| `memory_type` | 记忆类型（`preference` / `rule` / `fact` 等）|
+| `recall_explain` | 召回解释（为什么命中了这条）|
+| `created_at` | 创建时间 |
 
 ---
 
-## Choose your surface
+## 使用方式
 
-### Python package
+公开边界说明：
+- 稳定外部接口见 [`docs/API_CONTRACT.md`](./docs/API_CONTRACT.md)
+- 弃用/兼容规则见 [`docs/DEPRECATION_POLICY.md`](./docs/DEPRECATION_POLICY.md)
+- `wangchuan.v3.*`、`wangchuan.memory_api`、`wangchuan.recall_service`、`wangchuan.runtime_state` 等路径默认视为 internal，不建议外部直接绑定
+- `WangchuanPipeline` 当前可为兼容场景保留，但不是新的稳定集成首选入口
+- 更完整的使用文档见 [`docs/QUICKSTART.md`](./docs/QUICKSTART.md)、[`docs/CLI.md`](./docs/CLI.md)、[`docs/MCP.md`](./docs/MCP.md)、[`docs/STORAGE.md`](./docs/STORAGE.md)、[`docs/FAQ.md`](./docs/FAQ.md)、[`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)、[`docs/TROUBLESHOOTING.md`](./docs/TROUBLESHOOTING.md)、[`docs/ALPHA_TRIAL_GUIDE.md`](./docs/ALPHA_TRIAL_GUIDE.md)、[`docs/FEEDBACK_TEMPLATE.md`](./docs/FEEDBACK_TEMPLATE.md)
+
+### Python 包
 
 ```python
 from wangchuan import (
@@ -176,69 +188,48 @@ from wangchuan.facade import invoke, health, capabilities, version
 ```bash
 python3 -m wangchuan status
 python3 -m wangchuan healthcheck --json
-python3 -m wangchuan recall "user preferences" --limit 3 --json
-python3 -m wangchuan recall-raw "exact wording" --limit 3 --json
-python3 -m wangchuan recall-scars "rules and lessons" --limit 3 --json
+python3 -m wangchuan recall "用户偏好" --limit 3 --json
 python3 -m wangchuan facade-version --json
-python3 -m wangchuan facade-health --json
 ```
 
-### MCP server
+### MCP Server
 
 ```bash
 pip install wangchuan-memory[mcp]
 python3 -m wangchuan.mcp_server
 ```
 
-Stable MCP tools: `memory_write`, `memory_search`, `memory_search_raw`, `memory_search_scars`, `memory_status`, `memory_healthcheck`
+稳定 MCP 工具名：`memory_write`, `memory_search`, `memory_search_raw`, `memory_search_scars`, `memory_status`, `memory_healthcheck`
 
 ---
 
-## How it works
+## 工作原理
 
-WangChuan stores memories in a local SQLite database with:
+忘川使用本地 SQLite 数据库存储记忆，包含：
 
-1. **Graph-based knowledge store** — nodes (facts, tasks, skills, events) + edges (relationships)
-2. **Temperature-based lifecycle** — hot/stale/dormant memory states
-3. **Evidence boundary** — raw evidence, structured memory, and rule memory are kept separate
-4. **Explainable recall** — every recall returns a `recall_explain` field with ranking breakdown
+1. **图谱知识库** — 节点（事实/任务/技能/事件）+ 边（关系）
+2. **温度分层生命周期** — 热点/渐冷/沉睡记忆状态管理
+3. **证据边界** — 原始证据、结构化记忆、规则记忆分开存储
+4. **可解释召回** — 每次召回附带 `recall_explain` 字段，包含排名分解
 
-No external services required. No LLM dependency for core functionality.
-Optional LLM-powered triple extraction is available via `pip install wangchuan-memory[llm]`.
-
----
-
-## Installation profiles
-
-| Profile | Command | Adds |
-|---------|---------|------|
-| Base | `pip install wangchuan-memory` | Core engine + CLI |
-| LLM | `wangchuan-memory[llm]` | OpenAI + Anthropic SDKs |
-| MCP | `wangchuan-memory[mcp]` | MCP server support |
-| Crypto | `wangchuan-memory[crypto]` | Encryption helpers |
-| Dev | `wangchuan-memory[dev]` | pytest |
-| Full | `wangchuan-memory[full]` | Everything above |
+**无需外部服务。核心功能不依赖 LLM。**
+可选的 LLM 三元组提取通过 `pip install wangchuan-memory[llm]` 启用。
 
 ---
 
-## Reliability
+## 安装档位
 
-- **Healthcheck**: `python3 -m wangchuan healthcheck --json`
-- **Backup**: SQLite database is a single file, easy to backup
-- **Restore**: Copy the database file back, healthcheck to verify
-
----
-
-## Contributing
-
-WangChuan is in active development. Useful feedback includes:
-
-- A minimal reproduction query
-- What memory you expected vs. what you got
-- Whether the issue is in remember / recall / explain / boundaries
+| 档位 | 命令 | 附加内容 |
+|------|------|---------|
+| 基础 | `pip install wangchuan-memory` | 核心引擎 + CLI |
+| LLM | `wangchuan-memory[llm]` | OpenAI + Anthropic SDK |
+| MCP | `wangchuan-memory[mcp]` | MCP Server 支持 |
+| 加密 | `wangchuan-memory[crypto]` | 加密辅助 |
+| 开发 | `wangchuan-memory[dev]` | pytest |
+| 全量 | `wangchuan-memory[full]` | 全部 |
 
 ---
 
 ## License
 
-MIT License. See `LICENSE`.
+MIT License。见 `LICENSE`。

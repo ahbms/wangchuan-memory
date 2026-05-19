@@ -34,6 +34,11 @@ import re
 import json
 
 try:
+    from wangchuan.errors import assert_runtime_paths_are_usable
+except ImportError:
+    from wangchuan.errors import assert_runtime_paths_are_usable
+
+try:
     from wangchuan.paths import data_root, default_db_path, state_root, workspace_root
 except ImportError:
     from wangchuan.paths import data_root, default_db_path, state_root, workspace_root
@@ -767,6 +772,7 @@ class Memory:
 
     def __init__(self, db_path: str = None):
         self.db_path = str(Path(db_path).expanduser().resolve()) if db_path else str(default_db_path())
+        assert_runtime_paths_are_usable(self.db_path)
         self.temporal = TemporalEngine()
         self._memory_schema_index_ready = False
         self._last_recall_runtime: Dict[str, Any] = {

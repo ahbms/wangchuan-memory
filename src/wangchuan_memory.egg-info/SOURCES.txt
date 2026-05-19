@@ -1,6 +1,11 @@
 LICENSE
+MANIFEST.in
 README.md
+README_EN.md
 pyproject.toml
+src/wangchuan/MCP_GUIDE.md
+src/wangchuan/README.md
+src/wangchuan/README_EN.md
 src/wangchuan/__init__.py
 src/wangchuan/__main__.py
 src/wangchuan/canonical_repair.py
@@ -10,6 +15,7 @@ src/wangchuan/context_protocol.py
 src/wangchuan/curiosity_engine.py
 src/wangchuan/db_utils.py
 src/wangchuan/engine.py
+src/wangchuan/errors.py
 src/wangchuan/facade.py
 src/wangchuan/fts_utils.py
 src/wangchuan/mcp_server.py
@@ -75,6 +81,8 @@ src/wangchuan/scripts/__init__.py
 src/wangchuan/scripts/cleanup_snapshots.py
 src/wangchuan/scripts/fix_confidence_importance_dist.py
 src/wangchuan/scripts/generate_encryption_key.py
+src/wangchuan/v3/.env.example
+src/wangchuan/v3/README.md
 src/wangchuan/v3/__init__.py
 src/wangchuan/v3/activate_hook.py
 src/wangchuan/v3/auto_maintainer.py
@@ -99,6 +107,7 @@ src/wangchuan/v3/performance_monitor.py
 src/wangchuan/v3/pipeline_v3.py
 src/wangchuan/v3/precedent_checker.py
 src/wangchuan/v3/reflector.py
+src/wangchuan/v3/schema.sql
 src/wangchuan/v3/seed_memory.py
 src/wangchuan/v3/signal_processor.py
 src/wangchuan/v3/temporal_engine.py
@@ -167,4 +176,19 @@ src/wangchuan_memory.egg-info/dependency_links.txt
 src/wangchuan_memory.egg-info/entry_points.txt
 src/wangchuan_memory.egg-info/requires.txt
 src/wangchuan_memory.egg-info/top_level.txt
+tests/test_alpha_trial_scenarios.py
+tests/test_api_contract_docs.py
+tests/test_api_imports.py
+tests/test_build_artifacts.py
+tests/test_cli.py
+tests/test_docs_structure.py
+tests/test_error_messages.py
+tests/test_examples_smoke.py
+tests/test_facade_contract.py
+tests/test_faq_contract.py
+tests/test_first_run.py
+tests/test_healthcheck_export.py
+tests/test_migrations.py
+tests/test_release_check.py
 tests/test_release_smoke.py
+tests/test_remember_recall.py

@@ -28,6 +28,7 @@ from typing import List, Optional
 logger = logging.getLogger(__name__)
 
 MIGRATIONS_DIR = Path(__file__).parent
+SCHEMA_META_KEY = "schema_version"
 
 
 class MigrationManager:
@@ -39,7 +40,12 @@ class MigrationManager:
 
     def __init__(self, db_path: str):
         self.db_path = db_path
+        db_dir = os.path.dirname(self.db_path)
+        if db_dir:
+            os.makedirs(db_dir, exist_ok=True)
         self._ensure_version_table()
+        self._sync_meta_schema_version()
+        self._bootstrap_if_needed()
 
     def _get_conn(self) -> sqlite3.Connection:
         return sqlite3.connect(self.db_path, timeout=10.0)
@@ -56,6 +62,135 @@ class MigrationManager:
                 )
             """)
             conn.commit()
+        finally:
+            conn.close()
+
+    def _ensure_meta_table(self, conn: sqlite3.Connection) -> None:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS meta (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+            """
+        )
+
+    def _sync_meta_schema_version(self, version: str | None = None, conn: sqlite3.Connection | None = None) -> None:
+        owns_conn = conn is None
+        conn = conn or self._get_conn()
+        try:
+            current_version = version if version is not None else self.get_current_version()
+            self._ensure_meta_table(conn)
+            if current_version:
+                conn.execute(
+                    "INSERT INTO meta (key, value) VALUES (?, ?) "
+                    "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                    (SCHEMA_META_KEY, current_version),
+                )
+            else:
+                conn.execute("DELETE FROM meta WHERE key = ?", (SCHEMA_META_KEY,))
+            if owns_conn:
+                conn.commit()
+        finally:
+            if owns_conn:
+                conn.close()
+
+    def _table_exists(self, conn: sqlite3.Connection, table_name: str) -> bool:
+        row = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+            (table_name,),
+        ).fetchone()
+        return bool(row)
+
+    def _existing_columns(self, conn: sqlite3.Connection, table_name: str) -> set[str]:
+        return {
+            str(row[1])
+            for row in conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+        }
+
+    def _ensure_columns(self, conn: sqlite3.Connection, table_name: str, column_defs: dict[str, str]) -> None:
+        if not self._table_exists(conn, table_name):
+            return
+        existing = self._existing_columns(conn, table_name)
+        for column_name, column_sql in column_defs.items():
+            if column_name in existing:
+                continue
+            conn.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_sql}")
+            existing.add(column_name)
+
+    def _prepare_legacy_baseline(self, conn: sqlite3.Connection) -> None:
+        self._ensure_meta_table(conn)
+        self._ensure_columns(
+            conn,
+            "memories",
+            {
+                "type": "type TEXT DEFAULT 'fact'",
+                "confidence": "confidence REAL DEFAULT 0.7",
+                "evidence_count": "evidence_count INTEGER DEFAULT 1",
+                "sentiment": "sentiment TEXT DEFAULT 'neutral'",
+                "created_at": "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+                "updated_at": "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+                "last_recall": "last_recall TIMESTAMP",
+                "emotion": "emotion TEXT DEFAULT '{}'",
+                "importance": "importance REAL DEFAULT 0.5",
+                "temperature": "temperature TEXT DEFAULT 'warm'",
+                "last_trigger": "last_trigger TIMESTAMP",
+                "trigger_count": "trigger_count INTEGER DEFAULT 0",
+            },
+        )
+        self._ensure_columns(
+            conn,
+            "memory_schema_index",
+            {
+                "schema_version": "schema_version TEXT",
+                "source_layer": "source_layer TEXT",
+                "source_anchor": "source_anchor TEXT",
+                "source_session": "source_session TEXT",
+                "turn_signature": "turn_signature TEXT",
+                "memory_type": "memory_type TEXT",
+                "user_explicit": "user_explicit INTEGER DEFAULT 0",
+                "is_test_data": "is_test_data INTEGER DEFAULT 0",
+                "promotion_reason": "promotion_reason TEXT",
+                "hot_memory_candidate": "hot_memory_candidate INTEGER DEFAULT 0",
+                "provenance": "provenance TEXT",
+                "lifecycle": "lifecycle TEXT",
+                "dedupe_key": "dedupe_key TEXT",
+                "conflict_group": "conflict_group TEXT",
+                "quality_score": "quality_score REAL",
+                "evidence_level": "evidence_level TEXT",
+                "promotion_state": "promotion_state TEXT",
+                "last_confirmed_at": "last_confirmed_at TEXT",
+                "hotness_score": "hotness_score REAL",
+                "recall_source_type": "recall_source_type TEXT",
+                "importance": "importance REAL",
+                "confidence": "confidence REAL",
+                "trigger_count": "trigger_count INTEGER",
+                "last_recall": "last_recall TEXT",
+                "removed_at": "removed_at TEXT",
+                "updated_at": "updated_at TEXT",
+                "valid_until": "valid_until TEXT",
+                "superseded_by": "superseded_by INTEGER",
+                "supersession_chain": "supersession_chain TEXT",
+                "valid_from": "valid_from TEXT",
+                "content_preview": "content_preview TEXT",
+                "subject_domain": "subject_domain TEXT",
+            },
+        )
+
+    def _bootstrap_if_needed(self) -> None:
+        if self.get_current_version():
+            return
+        if not self.get_pending_migrations():
+            return
+        self.run_migrations()
+
+    def get_meta_schema_version(self) -> Optional[str]:
+        conn = self._get_conn()
+        try:
+            self._ensure_meta_table(conn)
+            row = conn.execute("SELECT value FROM meta WHERE key = ?", (SCHEMA_META_KEY,)).fetchone()
+            conn.commit()
+            return row[0] if row else None
         finally:
             conn.close()
 
@@ -126,11 +261,14 @@ class MigrationManager:
 
                 conn.execute("BEGIN IMMEDIATE")
                 try:
+                    if version == "001_baseline":
+                        self._prepare_legacy_baseline(conn)
                     mod.up(conn)
                     conn.execute(
                         "INSERT INTO schema_version (version, description) VALUES (?, ?)",
                         (version, description),
                     )
+                    self._sync_meta_schema_version(version=version, conn=conn)
                     conn.commit()
                     executed.append(version)
                     logger.info("迁移 %s 完成", version)
@@ -174,6 +312,13 @@ class MigrationManager:
                     conn.execute(
                         "DELETE FROM schema_version WHERE version = ?", (version,)
                     )
+                    current_version = None
+                    row = conn.execute(
+                        "SELECT version FROM schema_version ORDER BY applied_at DESC LIMIT 1"
+                    ).fetchone()
+                    if row:
+                        current_version = row[0]
+                    self._sync_meta_schema_version(version=current_version, conn=conn)
                     conn.commit()
                     rolled_back.append(version)
                     logger.info("回滚 %s 完成", version)
@@ -193,8 +338,11 @@ class MigrationManager:
         return {
             "db_path": self.db_path,
             "current_version": self.get_current_version(),
+            "meta_schema_version": self.get_meta_schema_version(),
             "applied_count": len(applied),
             "pending_count": len(pending),
+            "version_table_ready": True,
+            "version_matches_meta": self.get_current_version() == self.get_meta_schema_version(),
             "applied": applied,
             "pending": pending,
         }

@@ -1,0 +1,6 @@
+recursive-include src/wangchuan *.md *.sql *.example
+recursive-include src/wangchuan/v3 *.sql *.example *.md
+include README.md
+include README_EN.md
+include LICENSE
+recursive-exclude * __pycache__ *.py[cod]

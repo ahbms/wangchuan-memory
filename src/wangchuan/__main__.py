@@ -50,6 +50,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from typing import Any
 
 from . import (
@@ -62,6 +63,7 @@ from . import (
     facade_version,
 )
 from .canonical_repair import execute_safe as canonical_repair_execute_safe, inspect as canonical_repair_inspect
+from .errors import WangChuanConfigurationError
 from wangchuan._protocol import LayerRequest
 
 
@@ -222,7 +224,14 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
-    memory = Memory()
+    try:
+        memory = Memory()
+    except WangChuanConfigurationError as exc:
+        if getattr(args, "json", False):
+            _print_payload({"ok": False, "error": "configuration_error", "message": str(exc)}, True)
+        else:
+            print(f"Configuration error: {exc}", file=sys.stderr)
+        return 2
 
     if args.command == "remember":
         payload = memory.remember(args.content, importance=args.importance, tags=args.tags)
