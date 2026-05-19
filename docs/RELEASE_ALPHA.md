@@ -21,23 +21,22 @@
 
 参见 [`API_CONTRACT.md`](./API_CONTRACT.md) 与 [`DEPRECATION_POLICY.md`](./DEPRECATION_POLICY.md)。
 
-## 本地发布前已验证
+## 本地与远端发布前已验证
 
+- GitHub Actions 远端 CI 已通过：Python 3.10 / 3.11 / 3.12、build、audit 全绿
 - 干净树下 `scripts/release_check.py` 返回 `OVERALL PASS`
-- `pytest -q` 通过超过 20 个测试
+- `pytest -q` 通过 `39 passed`
 - 首次运行空目录初始化可用
 - `remember → recall` smoke 可用
 - `python3 -m wangchuan status --json` 可用
 - `python -m build` 可生成 wheel 与 sdist
 - wheel install smoke 可在全新 venv 中通过
-- 打包产物包含 `wangchuan/v3/schema.sql`
+- 打包产物包含 `wangchuan/v3/schema.sql` 与 `wangchuan/v3/.env.example`
 - optional extras `[mcp]`、`[llm]`、`[crypto]` 可独立安装
-- 本地 `pip-audit` 未发现已知漏洞
+- 依赖审计 job 已通过
 
 ## 已知 alpha 边界
 
-- GitHub Actions 远端实跑仍需仓库侧确认
-- Python 3.10 support 已在 CI 声明，但仍需远端或本地解释器确认
 - `wangchuan.v3.*` 是内部实现承载层，不是推荐 stable import surface
 - L4/L5/L6 天工集成为 optional，缺失时应降级到 standalone stub
 - Web API 仍是 preview / local-only
